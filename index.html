@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>Agenda 3 Dies</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #eef2f7;
+        margin: 0;
+        text-align: center;
+    }
+
+    header {
+        background: #2d89ef;
+        color: white;
+        padding: 20px;
+    }
+
+    .dies {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .dia {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        width: 250px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+        width: 80%;
+        padding: 8px;
+        margin: 5px;
+    }
+
+    button {
+        padding: 8px 12px;
+        background: #2d89ef;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #1b5fbd;
+    }
+
+    .deure {
+        margin: 5px 0;
+        background: #f4f4f4;
+        padding: 5px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .eliminar {
+        background: red;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>📚 Agenda (3 dies)</h1>
+    <p>Els pròxims dies s’actualitzen sols</p>
+</header>
+
+<div class="dies" id="dies"></div>
+
+<script>
+function obtenirPropersDies() {
+    let dies = [];
+    let avui = new Date();
+
+    for (let i = 0; i < 3; i++) {
+        let d = new Date();
+        d.setDate(avui.getDate() + i);
+
+        let text = d.toISOString().split("T")[0];
+        dies.push(text);
+    }
+
+    return dies;
+}
+
+let dades = JSON.parse(localStorage.getItem("agenda")) || {};
+
+function guardar() {
+    localStorage.setItem("agenda", JSON.stringify(dades));
+}
+
+function crearAgenda() {
+    const container = document.getElementById("dies");
+    container.innerHTML = "";
+
+    const dies = obtenirPropersDies();
+
+    dies.forEach(dia => {
+        if (!dades[dia]) dades[dia] = [];
+
+        const div = document.createElement("div");
+        div.className = "dia";
+
+        div.innerHTML = `
+            <h3>📅 ${dia}</h3>
+            <input type="text" placeholder="Afegir deure..." id="input-${dia}">
+            <button onclick="afegir('${dia}')">Afegir</button>
+            <div id="llista-${dia}"></div>
+        `;
+
+        container.appendChild(div);
+
+        mostrarDeures(dia);
+    });
+
+    guardar();
+}
+
+function mostrarDeures(dia) {
+    const llista = document.getElementById("llista-" + dia);
+    llista.innerHTML = "";
+
+    dades[dia].forEach((deure, index) => {
+        const div = document.createElement("div");
+        div.className = "deure";
+
+        div.innerHTML = `
+            <span>${deure}</span>
+            <button class="eliminar" onclick="eliminar('${dia}', ${index})">X</button>
+        `;
+
+        llista.appendChild(div);
+    });
+}
+
+function afegir(dia) {
+    const input = document.getElementById("input-" + dia);
+    const text = input.value;
+
+    if (!text) return;
+
+    dades[dia].push(text);
+    guardar();
+    crearAgenda();
+}
+
+function eliminar(dia, index) {
+    dades[dia].splice(index, 1);
+    guardar();
+    crearAgenda();
+}
+
+crearAgenda();
+</script>
+
+</body>
+</html>
